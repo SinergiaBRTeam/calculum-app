@@ -18,6 +18,7 @@ import {
   type IndefiniteIntegralResult,
   type IntegralResult,
 } from "./lib/integral";
+import { useDebouncedValue } from "./hooks/useDebouncedValue";
 
 export default function App() {
   const [tab, setTab] = useState<TabKey>("limits");
@@ -41,51 +42,68 @@ export default function App() {
   const [integralResult, setIntegralResult] = useState<IntegralResult | null>(null);
   const [integralLoading, setIntegralLoading] = useState(false);
 
+  const debouncedExpr = useDebouncedValue(expr, 300);
+
+  const debouncedLimitA = useDebouncedValue(a, 300);
+  const debouncedLimitSide = useDebouncedValue(side, 300);
+
+  const debouncedDerivativeAt = useDebouncedValue(derivativeAt, 300);
+  const debouncedDerivativeVar = useDebouncedValue(derivativeVar, 300);
+
+  const debouncedIntegralVar = useDebouncedValue(integralVar, 300);
+  const debouncedIntegralLower = useDebouncedValue(integralLower, 300);
+  const debouncedIntegralUpper = useDebouncedValue(integralUpper, 300);
+
   useEffect(() => {
     let live = true;
     setLoading(true);
     (async () => {
-      const r = await computeLimit(expr, a, side);
+      const r = await computeLimit(debouncedExpr, debouncedLimitA, debouncedLimitSide);
       if (live) setResult(r);
       setLoading(false);
     })();
     return () => { live = false; };
-  }, [expr, a, side]);
+  }, [debouncedExpr, debouncedLimitA, debouncedLimitSide]);
 
   useEffect(() => {
     let live = true;
     setDerivativeLoading(true);
     (async () => {
-      const r = await computeDerivative(expr, derivativeAt, derivativeVar);
+      const r = await computeDerivative(debouncedExpr, debouncedDerivativeAt, debouncedDerivativeVar);
       if (live) setDerivativeResult(r);
       setDerivativeLoading(false);
     })();
     return () => { live = false; };
-  }, [expr, derivativeAt, derivativeVar]);
+  }, [debouncedExpr, debouncedDerivativeAt, debouncedDerivativeVar]);
 
   useEffect(() => {
     let live = true;
     setIndefIntegralLoading(true);
     (async () => {
-      const r = await computeIndefiniteIntegral(expr, integralVar);
+      const r = await computeIndefiniteIntegral(debouncedExpr, debouncedIntegralVar);
       if (live) setIndefIntegralResult(r);
       setIndefIntegralLoading(false);
     })();
     return () => {
       live = false;
     };
-  }, [expr, integralVar]);
+  }, [debouncedExpr, debouncedIntegralVar]);
 
   useEffect(() => {
     let live = true;
     setIntegralLoading(true);
     (async () => {
-      const r = await computeIntegral(expr, integralLower, integralUpper, integralVar);
+      const r = await computeIntegral(
+        debouncedExpr,
+        debouncedIntegralLower,
+        debouncedIntegralUpper,
+        debouncedIntegralVar
+      );
       if (live) setIntegralResult(r);
       setIntegralLoading(false);
     })();
     return () => { live = false; };
-  }, [expr, integralLower, integralUpper, integralVar]);
+  }, [debouncedExpr, debouncedIntegralLower, debouncedIntegralUpper, debouncedIntegralVar]);
 
   return (
     <div className="container-p py-6 space-y-6">
