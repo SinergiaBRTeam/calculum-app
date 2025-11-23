@@ -35,8 +35,10 @@ export type IndefiniteIntegralResult =
 // conexões mais lentas. O timeout anterior (8s) fazia a chamada expirar antes
 // do carregamento terminar, causando erro em todas as integrais (indefinidas e
 // definidas) mesmo para funções simples como sin(x). Aumentamos a janela para
-// acomodar o tempo de bootstrap do worker.
-const SYMPY_TIMEOUT_MS = 20000;
+// acomodar o tempo de bootstrap do worker. Mantemos uma margem extra porque o
+// carregamento agora é disparado em background, mas ainda pode levar tempo em
+// redes mais lentas.
+const SYMPY_TIMEOUT_MS = 45000;
 
 export async function computeIntegral(
   expression: string,

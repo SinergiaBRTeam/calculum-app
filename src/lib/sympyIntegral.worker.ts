@@ -7,6 +7,9 @@ type Res =
 const PYODIDE_VER = "0.24.1";
 const BASE = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VER}/full`;
 let pyodide: any | null = null;
+// Iniciamos o download do Pyodide assim que o worker é carregado para evitar
+// que a primeira chamada expire enquanto os artefatos ainda estão baixando.
+const pyodideReady = ensurePyodide();
 
 async function ensurePyodide() {
   if (pyodide) return pyodide;
@@ -27,7 +30,7 @@ function preprocess(expr: string): string {
 }
 
 async function evalIntegral(expr: string, variable: string, lower: number | null, upper: number | null) {
-  const p = await ensurePyodide();
+  const p = await pyodideReady;
   const e = preprocess(expr);
   const lowerPy = Number.isFinite(lower as number) ? String(lower) : "None";
   const upperPy = Number.isFinite(upper as number) ? String(upper) : "None";
