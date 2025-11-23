@@ -19,7 +19,12 @@ function getWorker() {
   return worker;
 }
 
-export async function sympyIntegral(expr: string, lower: number, upper: number, variable: string): Promise<Ok> {
+export async function sympyIntegral(
+  expr: string,
+  lower: number | null,
+  upper: number | null,
+  variable: string
+): Promise<Ok> {
   const w = getWorker();
   const id = seq++;
   return new Promise((resolve, reject) => {

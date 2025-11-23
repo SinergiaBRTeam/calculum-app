@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-type Req = { id: number; expr: string; variable: string; lower: number; upper: number };
+type Req = { id: number; expr: string; variable: string; lower: number | null; upper: number | null };
 type Res =
   | { id: number; ok: true; indefinite: string | null; definite: number | null }
   | { id: number; ok: false; error: string };
@@ -26,9 +26,11 @@ function preprocess(expr: string): string {
     .replace(/÷/g, "/");
 }
 
-async function evalIntegral(expr: string, variable: string, lower: number, upper: number) {
+async function evalIntegral(expr: string, variable: string, lower: number | null, upper: number | null) {
   const p = await ensurePyodide();
   const e = preprocess(expr);
+  const lowerPy = Number.isFinite(lower as number) ? String(lower) : "None";
+  const upperPy = Number.isFinite(upper as number) ? String(upper) : "None";
   const code = `
 from sympy import symbols, integrate, oo
 from sympy.parsing.sympy_parser import parse_expr, standard_transformations, convert_xor, implicit_multiplication_application
@@ -50,16 +52,17 @@ def do_integral(expr_str, lower, upper):
         pass
 
     definite_val = None
-    try:
-        val = integrate(e, (var, lower, upper))
-        if val.is_real:
-            definite_val = float(val.evalf(15))
-    except Exception:
-        pass
+    if lower is not None and upper is not None:
+        try:
+            val = integrate(e, (var, lower, upper))
+            if val.is_real:
+                definite_val = float(val.evalf(15))
+        except Exception:
+            pass
 
     return [indef_str, definite_val]
 
-do_integral("${e.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}", ${Number.isFinite(lower) ? lower : 0}, ${Number.isFinite(upper) ? upper : 0})
+do_integral("${e.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}", ${lowerPy}, ${upperPy})
   `.trim();
   return p.runPython(code);
 }

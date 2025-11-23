@@ -12,7 +12,12 @@ import { DerivativeControls } from "./components/DerivativeControls";
 import { math } from "./lib/math";
 import { InlineMath } from "react-katex";
 import { IntegralControls } from "./components/IntegralControls";
-import { computeIntegral, type IntegralResult } from "./lib/integral";
+import {
+  computeIndefiniteIntegral,
+  computeIntegral,
+  type IndefiniteIntegralResult,
+  type IntegralResult,
+} from "./lib/integral";
 
 export default function App() {
   const [tab, setTab] = useState<TabKey>("limits");
@@ -31,6 +36,8 @@ export default function App() {
   const [integralVar, setIntegralVar] = useState("x");
   const [integralLower, setIntegralLower] = useState(0);
   const [integralUpper, setIntegralUpper] = useState(1);
+  const [indefIntegralResult, setIndefIntegralResult] = useState<IndefiniteIntegralResult | null>(null);
+  const [indefIntegralLoading, setIndefIntegralLoading] = useState(false);
   const [integralResult, setIntegralResult] = useState<IntegralResult | null>(null);
   const [integralLoading, setIntegralLoading] = useState(false);
 
@@ -58,6 +65,19 @@ export default function App() {
 
   useEffect(() => {
     let live = true;
+    setIndefIntegralLoading(true);
+    (async () => {
+      const r = await computeIndefiniteIntegral(expr, integralVar);
+      if (live) setIndefIntegralResult(r);
+      setIndefIntegralLoading(false);
+    })();
+    return () => {
+      live = false;
+    };
+  }, [expr, integralVar]);
+
+  useEffect(() => {
+    let live = true;
     setIntegralLoading(true);
     (async () => {
       const r = await computeIntegral(expr, integralLower, integralUpper, integralVar);
@@ -79,128 +99,134 @@ export default function App() {
       </div>
 
       {tab === "limits" && (
-      <>
-        <section className="grid lg:grid-cols-[1.2fr_1fr] gap-6 items-start">
-          {/* Coluna esquerda: entrada + preview */}
-          <div className="card p-5 space-y-4">
-            <h2 className="section-title">Função f(x)</h2>
-            <FunctionInput value={expr} onChange={setExpr} />
-            <div>
-              <h3 className="muted mb-2">Pré-visualização</h3>
-            <ExpressionPreview expression={expr} />
-          </div>
-        </div>
-
-          {/* Coluna direita: controles + resultado (fixo no scroll) */}
-          <div className="panel-sticky">
+        <>
+          <section className="grid lg:grid-cols-[1.2fr_1fr] gap-6 items-start">
+            {/* Coluna esquerda: entrada + preview */}
             <div className="card p-5 space-y-4">
-              <h2 className="section-title">Configurações do Limite</h2>
-              <LimitControls
-                variable={"x"} onChangeVariable={()=>{}}
-                a={a} onChangeA={setA}
-                side={side} onChangeSide={setSide}
-              />
-              <ResultCard loading={loading} result={result} />
+              <h2 className="section-title">Função f(x)</h2>
+              <FunctionInput value={expr} onChange={setExpr} />
+              <div>
+                <h3 className="muted mb-2">Pré-visualização</h3>
+                <ExpressionPreview expression={expr} />
+              </div>
             </div>
-          </div>
-        </section>
 
-        {/* Gráfico em largura total abaixo */}
-        <section className="card p-5">
-          <h2 className="section-title mb-4">Gráfico</h2>
-          <Plot expression={expr} around={a} limitResult={result} />
-        </section>
-      </>
-    )}
+            {/* Coluna direita: controles + resultado (fixo no scroll) */}
+            <div className="panel-sticky">
+              <div className="card p-5 space-y-4">
+                <h2 className="section-title">Configurações do Limite</h2>
+                <LimitControls variable={"x"} onChangeVariable={() => {}} a={a} onChangeA={setA} side={side} onChangeSide={setSide} />
+                <ResultCard loading={loading} result={result} />
+              </div>
+            </div>
+          </section>
+
+          {/* Gráfico em largura total abaixo */}
+          <section className="card p-5">
+            <h2 className="section-title mb-4">Gráfico</h2>
+            <Plot expression={expr} around={a} limitResult={result} />
+          </section>
+        </>
+      )}
 
       {tab === "derivatives" && (
-      <>
-        <section className="grid lg:grid-cols-[1.2fr_1fr] gap-6 items-start">
-          <div className="card p-5 space-y-4">
-            <h2 className="section-title">Função f(x)</h2>
-            <FunctionInput value={expr} onChange={setExpr} />
-            <div className="space-y-3">
-              <div>
-                <h3 className="muted mb-2">Pré-visualização</h3>
-                <ExpressionPreview expression={expr} variable={derivativeVar} />
-              </div>
-              <DerivativePreview derivativeExpr={derivativeResult?.derivativeExpr ?? null} variable={derivativeVar} />
-            </div>
-          </div>
-
-          <div className="panel-sticky">
+        <>
+          <section className="grid lg:grid-cols-[1.2fr_1fr] gap-6 items-start">
             <div className="card p-5 space-y-4">
-              <h2 className="section-title">Derivada em um ponto</h2>
-              <DerivativeControls
-                variable={derivativeVar}
-                onChangeVariable={setDerivativeVar}
-                point={derivativeAt}
-                onChangePoint={setDerivativeAt}
-              />
-              <DerivativeResultCard
-                loading={derivativeLoading}
-                result={derivativeResult}
-                at={derivativeAt}
-                variable={derivativeVar}
-              />
+              <h2 className="section-title">Função f(x)</h2>
+              <FunctionInput value={expr} onChange={setExpr} />
+              <div className="space-y-3">
+                <div>
+                  <h3 className="muted mb-2">Pré-visualização</h3>
+                  <ExpressionPreview expression={expr} variable={derivativeVar} />
+                </div>
+                <DerivativePreview derivativeExpr={derivativeResult?.derivativeExpr ?? null} variable={derivativeVar} />
+              </div>
             </div>
-          </div>
-        </section>
 
-        <section className="card p-5">
-          <h2 className="section-title mb-4">Gráfico</h2>
-          <Plot expression={expr} around={derivativeAt} limitResult={null} />
-        </section>
-      </>
-    )}
+            <div className="panel-sticky">
+              <div className="card p-5 space-y-4">
+                <h2 className="section-title">Derivada em um ponto</h2>
+                <DerivativeControls
+                  variable={derivativeVar}
+                  onChangeVariable={setDerivativeVar}
+                  point={derivativeAt}
+                  onChangePoint={setDerivativeAt}
+                />
+                <DerivativeResultCard
+                  loading={derivativeLoading}
+                  result={derivativeResult}
+                  at={derivativeAt}
+                  variable={derivativeVar}
+                />
+              </div>
+            </div>
+          </section>
+
+          <section className="card p-5">
+            <h2 className="section-title mb-4">Gráfico</h2>
+            <Plot expression={expr} around={derivativeAt} limitResult={null} />
+          </section>
+        </>
+      )}
       {tab === "integrals" && (
-      <>
-        <section className="grid lg:grid-cols-[1.2fr_1fr] gap-6 items-start">
-          <div className="card p-5 space-y-4">
-            <h2 className="section-title">Função f(x)</h2>
-            <FunctionInput value={expr} onChange={setExpr} />
-            <div className="space-y-3">
-              <div>
-                <h3 className="muted mb-2">Pré-visualização</h3>
-                <ExpressionPreview expression={expr} variable={integralVar} />
-              </div>
-              <IntegralPreview integralExpr={integralResult?.indefiniteExpr} variable={integralVar} />
-            </div>
-          </div>
-
-          <div className="panel-sticky">
+        <>
+          <section className="grid lg:grid-cols-[1.2fr_1fr] gap-6 items-start">
             <div className="card p-5 space-y-4">
-              <h2 className="section-title">Integral definida</h2>
-              <IntegralControls
-                variable={integralVar}
-                onChangeVariable={setIntegralVar}
-                lower={integralLower}
-                upper={integralUpper}
-                onChangeLower={setIntegralLower}
-                onChangeUpper={setIntegralUpper}
-              />
-              <IntegralResultCard
-                loading={integralLoading}
-                result={integralResult}
-                lower={integralLower}
-                upper={integralUpper}
-                variable={integralVar}
-              />
+              <h2 className="section-title">Função f(x)</h2>
+              <FunctionInput value={expr} onChange={setExpr} />
+              <div className="space-y-3">
+                <div>
+                  <h3 className="muted mb-2">Pré-visualização</h3>
+                  <ExpressionPreview expression={expr} variable={integralVar} />
+                </div>
+                <IntegralPreview integralExpr={indefIntegralResult?.expression} variable={integralVar} />
+              </div>
             </div>
-          </div>
-        </section>
 
-        <section className="card p-5">
-          <h2 className="section-title mb-4">Gráfico</h2>
-          <Plot
-            expression={expr}
-            around={Number.isFinite((integralLower + integralUpper) / 2) ? (integralLower + integralUpper) / 2 : 0}
-            limitResult={null}
-            areaRange={[integralLower, integralUpper]}
-          />
-        </section>
-      </>
-    )}
+            <div className="panel-sticky">
+              <div className="card p-5 space-y-4 mb-4">
+                <h2 className="section-title">Integral indefinida</h2>
+                <IndefiniteIntegralCard
+                  loading={indefIntegralLoading}
+                  result={indefIntegralResult}
+                  variable={integralVar}
+                  onChangeVariable={setIntegralVar}
+                />
+              </div>
+              <div className="card p-5 space-y-4">
+                <h2 className="section-title">Integral definida</h2>
+                <IntegralControls
+                  variable={integralVar}
+                  onChangeVariable={setIntegralVar}
+                  lower={integralLower}
+                  upper={integralUpper}
+                  onChangeLower={setIntegralLower}
+                  onChangeUpper={setIntegralUpper}
+                  showVariable={false}
+                />
+                <IntegralResultCard
+                  loading={integralLoading}
+                  result={integralResult}
+                  lower={integralLower}
+                  upper={integralUpper}
+                  variable={integralVar}
+                />
+              </div>
+            </div>
+          </section>
+
+          <section className="card p-5">
+            <h2 className="section-title mb-4">Gráfico</h2>
+            <Plot
+              expression={expr}
+              around={Number.isFinite((integralLower + integralUpper) / 2) ? (integralLower + integralUpper) / 2 : 0}
+              limitResult={null}
+              areaRange={[integralLower, integralUpper]}
+            />
+          </section>
+        </>
+      )}
       {tab === "docs" && <Docs />}
     </div>
   );
@@ -283,8 +309,6 @@ function IntegralResultCard({ loading, result, lower, upper, variable }: { loadi
     result?.kind === "error" ? "Erro" :
     hasValue ? String(round(result.definiteValue as number)) : "—";
 
-  const latexIndef = result?.indefiniteExpr ? toLatex(result.indefiniteExpr, variable) : null;
-
   return (
     <div className="border rounded-xl p-4 bg-gray-50 dark:bg-slate-800/60 dark:border-slate-700 space-y-3">
       <div>
@@ -304,14 +328,61 @@ function IntegralResultCard({ loading, result, lower, upper, variable }: { loadi
           <div className="text-xs text-red-600 mt-2">{String(result.error)}</div>
         )}
       </div>
+    </div>
+  );
+}
 
-      {latexIndef && (
+function IndefiniteIntegralCard({
+  loading,
+  result,
+  variable,
+  onChangeVariable,
+}: {
+  loading: boolean;
+  result: IndefiniteIntegralResult | null;
+  variable: string;
+  onChangeVariable: (v: string) => void;
+}) {
+  const hasExpr = result?.kind === "value" && !!result.expression;
+  const color =
+    result?.kind === "error" ? "text-red-600 dark:text-red-400" :
+    hasExpr ? "text-emerald-600 dark:text-emerald-400" : "text-gray-700 dark:text-slate-300";
+
+  const latex = result?.kind === "value" && result.expression ? toLatex(result.expression, variable) : null;
+
+  const helperText =
+    loading ? "Calculando…" :
+    result?.kind === "error" ? "Erro ao integrar" :
+    hasExpr ? "Expressão simbólica encontrada" : "—";
+
+  return (
+    <div className="border rounded-xl p-4 bg-gray-50 dark:bg-slate-800/60 dark:border-slate-700 space-y-3">
+      <div className="grid-2-auto items-end gap-3">
         <div>
-          <div className="text-sm text-gray-600 dark:text-slate-300 mb-1">Integral indefinida</div>
-          <div className="katex-box katex-box--muted">
-            <InlineMath math={`\\int f(${variable})\\,d${variable}=\\displaystyle ${latexIndef}`} />
-            <div className="text-xs mt-1 text-gray-500 dark:text-slate-400">{result?.note ?? "forma simbólica"}</div>
-          </div>
+          <div className="text-sm text-gray-600 dark:text-slate-300 mb-1">Variável</div>
+          <input
+            className="input"
+            maxLength={1}
+            value={variable}
+            onChange={(e) => onChangeVariable(e.target.value || "x")}
+          />
+        </div>
+        <div className="text-right">
+          <div className="text-sm text-gray-600 dark:text-slate-300">Resultado</div>
+          <div className={"text-lg font-semibold " + color}>{helperText}</div>
+          {result?.note && (
+            <div className="text-xs text-gray-500 dark:text-slate-400 mt-1">{result.note}</div>
+          )}
+          {result?.kind === "error" && (
+            <div className="text-xs text-red-600 mt-1">{String(result.error)}</div>
+          )}
+        </div>
+      </div>
+
+      {latex && (
+        <div className="katex-box katex-box--muted">
+          <InlineMath math={`\\int f(${variable})\\,d${variable}=\\displaystyle ${latex}`} />
+          <div className="text-xs mt-1 text-gray-500 dark:text-slate-400">{result?.note ?? "forma simbólica"}</div>
         </div>
       )}
     </div>
