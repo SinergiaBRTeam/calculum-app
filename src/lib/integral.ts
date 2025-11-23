@@ -31,7 +31,12 @@ export type IndefiniteIntegralResult =
       note?: string;
     };
 
-const SYMPY_TIMEOUT_MS = 8000;
+// O download inicial do Pyodide + SymPy costuma demorar vários segundos em
+// conexões mais lentas. O timeout anterior (8s) fazia a chamada expirar antes
+// do carregamento terminar, causando erro em todas as integrais (indefinidas e
+// definidas) mesmo para funções simples como sin(x). Aumentamos a janela para
+// acomodar o tempo de bootstrap do worker.
+const SYMPY_TIMEOUT_MS = 20000;
 
 export async function computeIntegral(
   expression: string,
