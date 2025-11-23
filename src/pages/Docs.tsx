@@ -9,14 +9,14 @@ export default function Docs() {
 
       <Section title="1. Visão geral">
         <p>
-          Esta aplicação calcula limites de funções reais de uma variável com entrada
-          livre de expressões, pré-visualização matemática, classificação de limite
-          lateral e bilateral, e gráfico interativo ao redor do ponto de interesse.
+          Esta aplicação calcula limites, derivadas e integrais de funções reais de
+          uma variável com entrada livre de expressões, pré-visualização matemática e
+          gráfico interativo para explorar o comportamento de <InlineMath math="f(x)" />.
         </p>
         <ul className="list-disc ml-6">
           <li>
             <b>Motor matemático:</b> <i>SymPy</i> (via Pyodide/WASM) para o cálculo
-            de limites laterais e combinação no bilateral.
+            simbólico de limites, derivadas e integrais indefinidas/definidas.
           </li>
           <li>
             <b>Simplificação algébrica:</b> <i>Nerdamer</i> para reduzir a expressão
@@ -41,14 +41,24 @@ export default function Docs() {
             <code>(1-cos(x))/x</code>, <code>ln(x)</code>, <code>sqrt(x+2)</code>.
           </li>
           <li>
-            Defina o ponto <InlineMath math="a" /> e escolha o tipo: bilateral{" "}
-            <InlineMath math="\lim_{x\to a} f(x)" />, esquerda{" "}
-            <InlineMath math="\lim_{x\to a^-} f(x)" /> ou direita{" "}
-            <InlineMath math="\lim_{x\to a^+} f(x)" />.
+            Escolha a aba desejada:
+            <ul className="list-disc ml-6 space-y-1 mt-2">
+              <li>
+                <b>Limites:</b> defina <InlineMath math="a" /> e o tipo (bilateral/lateral).
+              </li>
+              <li>
+                <b>Derivadas:</b> informe a variável e o ponto onde deseja avaliar
+                <InlineMath math="f'(x)" />.
+              </li>
+              <li>
+                <b>Integrais:</b> defina a variável e os limites inferior/superior para
+                obter a área sob a curva, além da integral indefinida simbólica.
+              </li>
+            </ul>
           </li>
           <li>
-            Veja a <b>forma simplificada</b> e o <b>resultado</b> do limite. O gráfico
-            mostra o comportamento próximo de <InlineMath math="x=a" />.
+            Veja a <b>forma simplificada</b>, o <b>resultado</b> numérico/simbólico e
+            explore o gráfico interativo, que destaca pontos e áreas relevantes.
           </li>
         </ol>
         <Details title="Sintaxe suportada (entrada)">
@@ -239,18 +249,17 @@ export default function Docs() {
       <Section title="7. Roadmap">
         <ul className="list-disc ml-6">
           <li>
-            <b>Derivadas:</b> simbólica (SymPy/Nerdamer) + numérica para verificação;
-            gráfico de <InlineMath math="f'(x)" /> e reta tangente.
-          </li>
-          <li>
-            <b>Integrais:</b> indefinidas (simbólicas) e definidas (numéricas: Simpson
-            ou Gauss); áreas e somas de Riemann.
+            <b>Integrais avançadas:</b> visualizar somas de Riemann e comparar métodos
+            numéricos (Simpson, trapézios) na aba de integrais.
           </li>
           <li>
             <b>Limites em infinito:</b> análise de assíntotas horizontais/oblíquas.
           </li>
           <li>
             <b>Funções por partes:</b> editor visual para nós de partição.
+          </li>
+          <li>
+            <b>Exportação:</b> salvar gráficos e passos simbólicos em PDF/PNG.
           </li>
         </ul>
       </Section>
