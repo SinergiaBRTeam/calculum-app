@@ -18,6 +18,19 @@ export type IntegralResult =
       definiteNote?: string;
     };
 
+export type IndefiniteIntegralResult =
+  | {
+      kind: "value";
+      expression: string | null;
+      note?: string;
+    }
+  | {
+      kind: "error";
+      error: unknown;
+      expression?: string | null;
+      note?: string;
+    };
+
 const SYMPY_TIMEOUT_MS = 8000;
 
 export async function computeIntegral(
@@ -48,7 +61,27 @@ export async function computeIntegral(
   return { kind: "error", error: "Não foi possível calcular" };
 }
 
-async function trySympy(expr: string, lower: number, upper: number, variable: string) {
+export async function computeIndefiniteIntegral(
+  expression: string,
+  variable = "x"
+): Promise<IndefiniteIntegralResult> {
+  try {
+    const sym = await trySympy(expression, null, null, variable);
+    if (sym?.indefiniteExpr) {
+      return { kind: "value", expression: sym.indefiniteExpr, note: sym.note };
+    }
+    return { kind: "error", error: "Não foi possível calcular simbolicamente" };
+  } catch (error) {
+    return { kind: "error", error };
+  }
+}
+
+async function trySympy(
+  expr: string,
+  lower: number | null,
+  upper: number | null,
+  variable: string
+) {
   try {
     const r = await withTimeout(sympyIntegral(expr, lower, upper, variable), SYMPY_TIMEOUT_MS);
     if (!r) return null;

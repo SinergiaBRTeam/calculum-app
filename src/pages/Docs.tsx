@@ -51,8 +51,9 @@ export default function Docs() {
                 <InlineMath math="f'(x)" />.
               </li>
               <li>
-                <b>Integrais:</b> defina a variável e os limites inferior/superior para
-                obter a área sob a curva, além da integral indefinida simbólica.
+                <b>Integrais:</b> escolha a variável e obtenha a <b>integral indefinida</b>
+                simbolicamente (sem limites) e, se quiser, informe os limites para o
+                valor da <b>integral definida</b> com aproximação numérica e tentativa simbólica.
               </li>
             </ul>
           </li>
@@ -167,6 +168,21 @@ export default function Docs() {
             Para funções definidas por partes, o limite bilateral em{" "}
             <InlineMath math="a" /> existe se os dois laterais coincidirem. A ferramenta
             avalia explicitamente esquerda e direita antes de compor o bilateral.
+          </p>
+        </Sub>
+
+        <Sub title="3.8 Integrais indefinidas e definidas">
+          <p>
+            A <b>integral indefinida</b> de <InlineMath math="f(x)" /> é uma antiderivada
+            simbólica, isto é, uma função <InlineMath math="F(x)" /> tal que
+            <InlineMath math="F'(x)=f(x)" />. Na aba de integrais, ela é calculada pelo
+            SymPy sem necessidade de limites.
+          </p>
+          <p>
+            Já a <b>integral definida</b> <InlineMath math="\int_a^b f(x)\,dx" /> retorna a
+            área assinada sob a curva entre <InlineMath math="a" /> e <InlineMath math="b" />.
+            Usamos o método de Simpson (numericamente) e, quando possível, o SymPy tenta
+            resolver simbolicamente para maior precisão.
           </p>
         </Sub>
       </Section>

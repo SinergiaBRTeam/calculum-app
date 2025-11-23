@@ -19,6 +19,7 @@ export function IntegralControls({
   upper,
   onChangeLower,
   onChangeUpper,
+  showVariable = true,
 }: {
   variable: string;
   onChangeVariable: (v: string) => void;
@@ -26,6 +27,7 @@ export function IntegralControls({
   upper: number;
   onChangeLower: (v: number) => void;
   onChangeUpper: (v: number) => void;
+  showVariable?: boolean;
 }) {
   const firstRender = useRef(true);
   const [lowerString, setLowerString] = useState(lower.toString());
@@ -42,16 +44,19 @@ export function IntegralControls({
   return (
     <div className="space-y-3">
       <div className="grid-2-auto items-end">
-        <div>
-          <label className="text-sm text-gray-600 dark:text-slate-300">Variável</label>
-          <input
-            className="input"
-            maxLength={1}
-            value={variable}
-            onChange={(e) => onChangeVariable(e.target.value || "x")}
-          />
-        </div>
-        <div />
+        {showVariable ? (
+          <div>
+            <label className="text-sm text-gray-600 dark:text-slate-300">Variável</label>
+            <input
+              className="input"
+              maxLength={1}
+              value={variable}
+              onChange={(e) => onChangeVariable(e.target.value || "x")}
+            />
+          </div>
+        ) : (
+          <div />
+        )}
         <div>
           <label className="text-sm text-gray-600 dark:text-slate-300">Limite inferior</label>
           <input
